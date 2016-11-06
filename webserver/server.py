@@ -245,7 +245,7 @@ def display_name():
     query_names.append(result)  # can also be accessed using result[0]
   cursor.close()
   # print query_names
-  context = dict(query_data = query_names, x=begin_date_time)
+  context = dict(query_data = query_names, x=begin_date_time, y=end_date_time)
   return render_template("index.html", **context)
   #return redirect('/')
 
