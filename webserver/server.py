@@ -119,7 +119,7 @@ def teardown_request(exception):
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
 @app.route('/')
-def index():
+def index(): 
   """
   request is a special object that Flask provides to access web request information:
 
@@ -132,8 +132,6 @@ def index():
 
   # DEBUG: this is debugging code to see what request looks like
   print request.args
-  print 'caca'
-
 
   #
   # example of a database query
@@ -171,6 +169,7 @@ def index():
   #     {% endfor %}
   #
   context = dict(data = names)
+  print "in here"
 
 
   #
@@ -196,34 +195,37 @@ def another():
 @app.route('/add', methods=['POST'])
 def add():
   name = request.form['name']
-  print name
+  # print name
   g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
   return redirect('/')
 
 
 # Display query results
-@app.route('/display', methods=['POST'])
-def display():
-  name = request.form
-  name2 = request.form['name']
-  #q1 =  'SELECT artist_name FROM artist WHERE artist_name LIKE %'
-  #q2 = q1 + str(name) + '%;'
-  n1 = '%' + name + '%'
-  cmd = 'SELECT artist_name FROM artist WHERE artist_name LIKE :n2';
-  cursor = g.conn.execute(text(cmd), n2=n1)
-  #cursor = g.conn.execute(text(q1), a_name = name);
-  query_names = []
-  for result in cursor:
-    query_names.append(result[0])  # can also be accessed using result[0]
-  cursor.close()
-  context = dict(query_data = query_names)
-  #return render_template("index.html", **context)
-  return redirect('/')
+# @app.route('/display', methods=['POST'])
+# def display():
+#   name = request.form
+#   name2 = request.form['name']
+#   #q1 =  'SELECT artist_name FROM artist WHERE artist_name LIKE %'
+#   #q2 = q1 + str(name) + '%;'
+#   n1 = '%' + name + '%'
+#   cmd = 'SELECT artist_name FROM artist WHERE artist_name LIKE :n2';
+#   cursor = g.conn.execute(text(cmd), n2=n1)
+#   #cursor = g.conn.execute(text(q1), a_name = name);
+#   query_names = []
+#   for result in cursor:
+#     query_names.append(result[0])  # can also be accessed using result[0]
+#   cursor.close()
+#   context = dict(query_data = query_names)
+#   #return render_template("index.html", **context)
+#   return redirect('/')
 
 @app.route('/', methods=["post", "get"])
 def display_name():
   name = request.form['a_name']
-  print name
+  begin_date_time = request.form['begin_date_time']
+  end_date_time = request.form['end_date_time']
+  print "I am here"
+  # print name
   #name2 = request.form['name']
   #q1 =  'SELECT name FROM test WHERE name LIKE (:n1)';
   #q2 = q1 + str(name) + '%;'
@@ -238,12 +240,12 @@ def display_name():
   #cursor = g.conn.execute(text(q1), a_name = name);
   query_names = []
   for result in cursor:
-    print result
+    # print result
     query_names.append(result[0])  # can also be accessed using result[0]
   cursor.close()
-  print query_names
-  context = dict(query_data = query_names)
-  return render_template("index.html", query_data=query_names)
+  # print query_names
+  context = dict(query_data = query_names, x=begin_date_time)
+  return render_template("index.html", **context)
   #return redirect('/')
 
 

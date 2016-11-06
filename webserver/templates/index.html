@@ -16,6 +16,52 @@
     <link href="http://cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/a549aa8780dbda16f6cff545aeabc3d71073911e/build/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
 
 </head>
+  <h1> Welcome to the SummerStage Event Page</h1>
+  
+
+  <h3>Search for an Event</h3>
+
+  <form class="form-inline" action"/" method="post">
+    <div class="form-group">
+      <input type="text" class="form-control" name="a_name" placeholder="Search Artist"> 
+    </div>
+    <!-- Date Range -->
+
+    <div class="form-group">
+        <div class='input-group date' id='datetimepicker1'>
+            <input type='text' name="begin_date_time" placeholder="Begin Date and Time" class="form-control"/>
+            <span class="input-group-addon">
+                <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class='input-group date' id='datetimepicker2'>
+            <input type='text' name="end_date_time" placeholder="End Date and Time" class="form-control" />
+            <span class="input-group-addon">
+                <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-default">Search</button>
+
+    <script type="text/javascript">
+      $(function () {
+          $('#datetimepicker1').datetimepicker();
+          $('#datetimepicker2').datetimepicker({
+              useCurrent: false //Important! See issue #1075
+          });
+          $("#datetimepicker1").on("dp.change", function (e) {
+              $('#datetimepicker2').data("DateTimePicker").minDate(e.date);
+          });
+          $("#datetimepicker2").on("dp.change", function (e) {
+              $('#datetimepicker2').data("DateTimePicker").maxDate(e.date);
+          });
+      });
+    </script>
+  </form>
+
 
 <body>
   <h1>Name of Artists in SummerStage Database</h1>
@@ -29,11 +75,6 @@
 
 <p><a href="/another">Go to the other page</a></p>
 
-<h2>Query by artist name</h2>
-<form method="post" action="/">
-<p>Name of artist: <input type="text" name="a_name"> <input type="submit" value="Search"></p>
-</form>
-
   <h3>Query by artist name</h3>
   <div>
     {% for n in query_data %}
@@ -41,26 +82,11 @@
     {% endfor %}
   </div>
 
-  <!-- Date Range -->
-  <div class="container">
-      <div class="row">
-          <div class='col-sm-6'>
-              <div class="form-group">
-                  <div class='input-group date' id='datetimepicker4'>
-                      <input type='text' class="form-control" />
-                      <span class="input-group-addon">
-                          <span class="glyphicon glyphicon-calendar"></span>
-                      </span>
-                  </div>
-              </div>
-          </div>
-          <script type="text/javascript">
-              $(function () {
-                  $('#datetimepicker4').datetimepicker();
-              });
-          </script>
-      </div>
+  <h3>DATE</h3>
+  <div>
+    {{x}}
   </div>
+
 
 </body>
 
