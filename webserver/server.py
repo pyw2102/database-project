@@ -235,13 +235,14 @@ def display_name():
   #cursor = g.conn.execute(q, (name,))
   #cursor = g.conn.execute(text(q1), n1 = name);
   n1 = '%' + name + '%'
-  cmd = 'SELECT artist_name FROM artist WHERE artist_name LIKE :n2';
+  #cmd = 'SELECT artist_name FROM artist WHERE artist_name LIKE :n2';
+  cmd = 'SELECT S2.show_title, S2.show_date FROM (SELECT DISTINCT S.show_id FROM performs_music_of G, artist A, performance P, show_hosted_at S WHERE G.artist_id = A.artist_id AND A.artist_id = P.artist_id AND P.show_id = S.show_id AND (A.artist_name LIKE :n2 OR S.show_title LIKE :n2 OR P.perf_title LIKE :n2 OR G.genre_type LIKE :n2 OR S.venue_name LIKE :n2 )) as X, show_hosted_at as S2 WHERE X.show_id = S2.show_id';
   cursor = g.conn.execute(text(cmd), n2=n1)
   #cursor = g.conn.execute(text(q1), a_name = name);
   query_names = []
   for result in cursor:
     # print result
-    query_names.append(result[0])  # can also be accessed using result[0]
+    query_names.append(result)  # can also be accessed using result[0]
   cursor.close()
   # print query_names
   context = dict(query_data = query_names, x=begin_date_time)
