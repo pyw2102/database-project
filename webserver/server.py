@@ -181,14 +181,14 @@ def index():
 #
 # This is an example of a different path.  You can see it at
 # 
-#     localhost:8111/another
+#     localhost:8111/event
 #
-# notice that the functio name is another() rather than index()
+# notice that the functio name is event() rather than index()
 # the functions for each app.route needs to have different names
 #
-@app.route('/another')
-def another():
-  return render_template("anotherfile.html")
+@app.route('/event')
+def event():
+  return render_template("event.html")
 
 
 # Example of adding new data to the database
