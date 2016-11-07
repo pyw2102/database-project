@@ -24,20 +24,6 @@ tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
 
-#
-# The following uses the postgresql test.db -- you can use this for debugging purposes
-# However for the project you will need to connect to your Part 2 database in order to use the
-# data
-#
-# XXX: The URI should be in the format of: 
-#
-#     postgresql://USER:PASSWORD@<IP_OF_POSTGRE_SQL_SERVER>/postgres
-#
-# For example, if you had username ewu2493, password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://ewu2493:foobar@<IP_OF_POSTGRE_SQL_SERVER>/postgres"
-#
-# Swap out the URI below with the URI for the database created in part 2
 #DATABASEURI = "sqlite:///test.db"
 
 DATABASEURI = "postgresql://jab2397:q4wba@104.196.175.120/postgres"
@@ -61,21 +47,6 @@ engine = create_engine(DATABASEURI)
 #     .tables               -- will list the tables in the database
 #     .schema <tablename>   -- print CREATE TABLE statement for table
 # 
-# The setup code should be deleted once you switch to using the Part 2 postgresql database
-#
-#engine.execute("""DROP TABLE IF EXISTS test;""")
-#engine.execute("""CREATE TABLE IF NOT EXISTS test (
-#  id serial,
-#  name text
-#);""")
-#engine.execute("""INSERT INTO test(name) VALUES('grace hopper');""")
-#engine.execute("""INSERT INTO test(name) VALUES('alan turing');""")
-
-#
-# END SQLITE SETUP CODE
-#
-
-
 
 @app.before_request
 def before_request():
@@ -136,10 +107,10 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT artist_name FROM artist")
+  cursor = g.conn.execute("SELECT * FROM show_hosted_at")
   names = []
   for result in cursor:
-    names.append(result[0])  # can also be accessed using result['name']
+    names.append(result)  # can also be accessed using result['name']
   cursor.close()
 
   #
@@ -190,6 +161,42 @@ def index():
 def another():
   return render_template("anotherfile.html")
 
+@app.route('/<showid>')
+def showinfo(showid):
+  cmd = 'SELECT show_title FROM show_hosted_at WHERE show_id = :showid';
+  c_title = g.conn.execute(text(cmd), showid=showid)
+
+  cmd = 'SELECT show_date FROM show_hosted_at WHERE show_id = :showid';
+  c_date = g.conn.execute(text(cmd), showid=showid)
+
+  cmd = 'SELECT show_time FROM show_hosted_at WHERE show_id = :showid';
+  c_time = g.conn.execute(text(cmd), showid=showid)
+
+  cmd = 'SELECT show_venue FROM show_hosted_at WHERE show_id = :showid';
+  c_venue = g.conn.execute(text(cmd), showid=showid)
+
+  cmd = """
+        SELECT X.perf_title, A.artist_name
+        FROM (SELECT P.perf_title, P.artist_id
+              FROM show_hosted_at S, performance P
+              WHERE S.show_id = P.show_id
+                    AND S.show_id = :showid) AS X,
+             artist as A
+        WHERE X.artist_id = A.artist_id""";
+  c_perf_artist = g.conn.execute(text(cmd), showid=showid)
+
+  cmd = 'SELECT vendor_name FROM sell WHERE show_id = :showid';
+  c_vendor = g.conn.execute(text(cmd), showid=showid)
+
+  cmd = """
+        SELECT X.perf_title, A.artist_name
+        FROM (SELECT P.perf_title, P.artist_id
+              FROM show_hosted_at S, performance P
+              WHERE S.show_id = P.show_id
+                    AND S.show_id = :showid) AS X,
+             artist as A
+        WHERE X.artist_id = A.artist_id""";
+  c_perf_artist = g.conn.execute(text(cmd), showid=showid)
 
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
@@ -200,51 +207,83 @@ def add():
   return redirect('/')
 
 
-# Display query results
-# @app.route('/display', methods=['POST'])
-# def display():
-#   name = request.form
-#   name2 = request.form['name']
-#   #q1 =  'SELECT artist_name FROM artist WHERE artist_name LIKE %'
-#   #q2 = q1 + str(name) + '%;'
-#   n1 = '%' + name + '%'
-#   cmd = 'SELECT artist_name FROM artist WHERE artist_name LIKE :n2';
-#   cursor = g.conn.execute(text(cmd), n2=n1)
-#   #cursor = g.conn.execute(text(q1), a_name = name);
-#   query_names = []
-#   for result in cursor:
-#     query_names.append(result[0])  # can also be accessed using result[0]
-#   cursor.close()
-#   context = dict(query_data = query_names)
-#   #return render_template("index.html", **context)
-#   return redirect('/')
-
 @app.route('/', methods=["post", "get"])
 def display_name():
   name = request.form['a_name']
   begin_date_time = request.form['begin_date_time']
   end_date_time = request.form['end_date_time']
-  print "I am here"
-  # print name
-  #name2 = request.form['name']
-  #q1 =  'SELECT name FROM test WHERE name LIKE (:n1)';
-  #q2 = q1 + str(name) + '%;'
-  #q = "SELECT artist_name FROM artist WHERE artist_name LIKE '%%s%';" % name
-  #cursor = g.conn.execute("""SELECT artist_name FROM artist WHERE artist_name LIKE '%{name}%'""".format(name=name))
-  #cursor = g.conn.execute(q)
-  #cursor = g.conn.execute(q, (name,))
-  #cursor = g.conn.execute(text(q1), n1 = name);
+  print name
+  print begin_date_time
+  print end_date_time
   n1 = '%' + name + '%'
-  #cmd = 'SELECT artist_name FROM artist WHERE artist_name LIKE :n2';
-  cmd = 'SELECT S2.show_title, S2.show_date FROM (SELECT DISTINCT S.show_id FROM performs_music_of G, artist A, performance P, show_hosted_at S WHERE G.artist_id = A.artist_id AND A.artist_id = P.artist_id AND P.show_id = S.show_id AND (A.artist_name LIKE :n2 OR S.show_title LIKE :n2 OR P.perf_title LIKE :n2 OR G.genre_type LIKE :n2 OR S.venue_name LIKE :n2 )) as X, show_hosted_at as S2 WHERE X.show_id = S2.show_id';
-  cursor = g.conn.execute(text(cmd), n2=n1)
-  #cursor = g.conn.execute(text(q1), a_name = name);
+  
+  if begin_date_time == '' and end_date_time == '':
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+           FROM (SELECT S.show_id
+                 FROM performs_music_of G, artist A, performance P, show_hosted_at S
+                 WHERE G.artist_id = A.artist_id
+                       AND A.artist_id = P.artist_id
+                       AND P.show_id = S.show_id
+                       AND (lower(A.artist_name) LIKE :n2
+                            OR lower(S.show_title) LIKE :n2
+                            OR lower(P.perf_title) LIKE :n2
+                            OR lower(G.genre_type) LIKE :n2 
+                            OR lower(S.venue_name) LIKE :n2 )) as X,
+           show_hosted_at as S2
+           WHERE X.show_id = S2.show_id""";
+
+  elif begin_date_time != '' and end_date_time == '':
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+           FROM (SELECT S.show_id
+                 FROM performs_music_of G, artist A, performance P, show_hosted_at S
+                 WHERE G.artist_id = A.artist_id
+                       AND A.artist_id = P.artist_id
+                       AND P.show_id = S.show_id
+                       AND (lower(A.artist_name) LIKE :n2
+                            OR lower(S.show_title) LIKE :n2
+                            OR lower(P.perf_title) LIKE :n2
+                            OR lower(G.genre_type) LIKE :n2 
+                            OR lower(S.venue_name) LIKE :n2 )) as X,
+           show_hosted_at as S2
+           WHERE X.show_id = S2.show_id AND S2.show_date >= :d1""";
+
+  elif begin_date_time == '' and end_date_time != '':
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+           FROM (SELECT S.show_id
+                 FROM performs_music_of G, artist A, performance P, show_hosted_at S
+                 WHERE G.artist_id = A.artist_id
+                       AND A.artist_id = P.artist_id
+                       AND P.show_id = S.show_id
+                       AND (lower(A.artist_name) LIKE :n2
+                            OR lower(S.show_title) LIKE :n2
+                            OR lower(P.perf_title) LIKE :n2
+                            OR lower(G.genre_type) LIKE :n2 
+                            OR lower(S.venue_name) LIKE :n2 )) as X,
+           show_hosted_at as S2
+           WHERE X.show_id = S2.show_id AND S2.show_date <= :d2""";
+
+  else:
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+           FROM (SELECT S.show_id
+                 FROM performs_music_of G, artist A, performance P, show_hosted_at S
+                 WHERE G.artist_id = A.artist_id
+                       AND A.artist_id = P.artist_id
+                       AND P.show_id = S.show_id
+                       AND (lower(A.artist_name) LIKE :n2
+                            OR lower(S.show_title) LIKE :n2
+                            OR lower(P.perf_title) LIKE :n2
+                            OR lower(G.genre_type) LIKE :n2 
+                            OR lower(S.venue_name) LIKE :n2 )) as X,
+           show_hosted_at as S2
+           WHERE X.show_id = S2.show_id AND (S2.show_date >= :d1 AND S2.show_date <= :d2
+)""";
+
+  cursor = g.conn.execute(text(cmd), n2=n1, d1=begin_date_time, d2=end_date_time)
   query_names = []
   for result in cursor:
     # print result
     query_names.append(result)  # can also be accessed using result[0]
   cursor.close()
-  # print query_names
   context = dict(query_data = query_names, x=begin_date_time, y=end_date_time)
   return render_template("index.html", **context)
   #return redirect('/')
