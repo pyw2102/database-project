@@ -67,10 +67,10 @@
 
 
 <body>
-
+<!--
   <h1>Name of Artists in SummerStage Database</h1>
-  /*<div>{{data}}</div>
-  */
+  <div>{{data}}</div>
+  
   <div>
     {% for n in data %}
     <div>{{n}}</div>
@@ -78,11 +78,11 @@
   </div>
 
 <p><a href="/event">Go to Event Page</a></p>
-
+-->
   <h3>Event query results</h3>
   <div>
     {% for n in query_data %}
-    <div>{{n}}</div>
+    <div><a href="/{{n.showid}}">{{n.showtitle}}</a> {{ n.showdate  }}  </div>
     {% endfor %}
   </div>
 

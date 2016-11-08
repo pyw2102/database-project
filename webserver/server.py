@@ -18,7 +18,8 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, url_for
+from datetime import datetime
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -44,7 +45,7 @@ engine = create_engine(DATABASEURI)
 #
 # The following sqlite3 commands may be useful:
 # 
-#     .tables               -- will list the tables in the database
+#     tables               -- will list the tables in the database
 #     .schema <tablename>   -- print CREATE TABLE statement for table
 # 
 
@@ -157,23 +158,65 @@ def index():
 # notice that the functio name is event() rather than index()
 # the functions for each app.route needs to have different names
 #
-@app.route('/event')
-def event():
-  return render_template("event.html")
+@app.route('/anotherfile')
+def anotherfile():
+  return render_template("anotherfile.html")
 
 @app.route('/<showid>')
-def showinfo(showid):
+def event(showid):
+  showinfo = {}
   cmd = 'SELECT show_title FROM show_hosted_at WHERE show_id = :showid';
   c_title = g.conn.execute(text(cmd), showid=showid)
+  title = c_title.first()[0]
+  c_title.close()
 
   cmd = 'SELECT show_date FROM show_hosted_at WHERE show_id = :showid';
   c_date = g.conn.execute(text(cmd), showid=showid)
+  #dx = datetime.strptime(c_date.first()[0], '%Y-%m-%d')
+  dx = c_date.first()[0]
+  date = dx.strftime('%B %d, %Y')
+  c_date.close()
 
   cmd = 'SELECT show_time FROM show_hosted_at WHERE show_id = :showid';
   c_time = g.conn.execute(text(cmd), showid=showid)
+  time = c_time.first()[0]
+  c_time.close()
 
-  cmd = 'SELECT show_venue FROM show_hosted_at WHERE show_id = :showid';
+  cmd = 'SELECT venue_name FROM show_hosted_at WHERE show_id = :showid';
   c_venue = g.conn.execute(text(cmd), showid=showid)
+  venue = c_venue.first()[0]
+  c_venue.close()
+
+  cmd = """SELECT V.address
+           FROM show_hosted_at S, venue V 
+           WHERE S.venue_name = V.venue_name
+                 AND S.show_id = :showid""";
+  c_address = g.conn.execute(text(cmd), showid=showid)
+  address = c_address.first()[0]
+  c_address.close()
+
+  cmd = """SELECT V.capacity
+           FROM show_hosted_at S, venue V 
+           WHERE S.venue_name = V.venue_name
+                 AND S.show_id = :showid""";
+  c_capacity = g.conn.execute(text(cmd), showid=showid)
+  capacity = c_capacity.first()[0]
+  print capacity
+  c_capacity.close()
+
+  cmd = """
+        SELECT O.location_name, O.price
+        FROM have H, show_hosted_at S, seat_option O
+        WHERE S.venue_name = H.venue_name
+              AND H.location_name = O.location_name
+              AND H.seat_id = O.seat_id
+              AND S.show_id = :showid""";
+  c_location_price = g.conn.execute(text(cmd), showid=showid)
+  location_price = []
+  for row in c_location_price:
+    rd = {'location': row[0], 'price': row[1]}
+    location_price.append(rd)
+  c_location_price.close()
 
   cmd = """
         SELECT X.perf_title, A.artist_name
@@ -184,19 +227,42 @@ def showinfo(showid):
              artist as A
         WHERE X.artist_id = A.artist_id""";
   c_perf_artist = g.conn.execute(text(cmd), showid=showid)
+  perf_artist = []
+  for row in c_perf_artist:
+    rd = {'perf': row[0], 'artist': row[1]}
+    perf_artist.append(rd)
+  c_perf_artist.close()
 
   cmd = 'SELECT vendor_name FROM sell WHERE show_id = :showid';
   c_vendor = g.conn.execute(text(cmd), showid=showid)
+  vendor = []
+  for row in c_vendor.fetchall():
+    vendor.append(row[0])
+  c_vendor.close()
+  print vendor
 
   cmd = """
-        SELECT X.perf_title, A.artist_name
-        FROM (SELECT P.perf_title, P.artist_id
-              FROM show_hosted_at S, performance P
-              WHERE S.show_id = P.show_id
-                    AND S.show_id = :showid) AS X,
-             artist as A
-        WHERE X.artist_id = A.artist_id""";
-  c_perf_artist = g.conn.execute(text(cmd), showid=showid)
+        SELECT DISTINCT M.genre_type
+        FROM performance P, performs_music_of M
+        WHERE P.artist_id = M.artist_id
+              AND P.show_id = :showid""";
+  c_genre = g.conn.execute(text(cmd), showid=showid)
+  genre = []
+  for row in c_genre.fetchall():
+    genre.append(row[0])
+  c_genre.close()
+
+  return render_template('event.html',
+                          title=title,
+                          date=date,
+                          time=time,
+                          venue=venue,
+                          address=address,
+                          capacity=capacity,
+                          location_price=location_price,
+                          perf_artist=perf_artist,
+                          vendor=vendor,
+                          genre=genre)
 
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
@@ -209,7 +275,7 @@ def add():
 
 @app.route('/', methods=["post", "get"])
 def display_name():
-  name = request.form['a_name']
+  name = request.form['a_name'].lower()
   begin_date_time = request.form['begin_date_time']
   end_date_time = request.form['end_date_time']
   print name
@@ -280,9 +346,9 @@ def display_name():
 
   cursor = g.conn.execute(text(cmd), n2=n1, d1=begin_date_time, d2=end_date_time)
   query_names = []
-  for result in cursor:
-    # print result
-    query_names.append(result)  # can also be accessed using result[0]
+  for row in cursor:
+    rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2]}
+    query_names.append(rd)  # can also be accessed using result[0]
   cursor.close()
   context = dict(query_data = query_names, x=begin_date_time, y=end_date_time)
   return render_template("index.html", **context)
