@@ -42,15 +42,6 @@
                 </button>
                 <a class="navbar-brand" href="/">Homepage</a>
             </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="#">About</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
         </div>
         <!-- /.container -->
     </nav>
@@ -97,9 +88,11 @@
             </div>
             <div class="section-lead">
                 <h4>Genres</h4>
-                {% for n in genre %}
-                <span class="label label-info">{{ n }}</span>
-                {% endfor %}
+                <div class="section-info">
+                    {% for n in genre %}
+                    <span class="label label-info">{{ n }}</span>
+                    {% endfor %}
+                </div>
             </div>
         </div>   
     </div>
