@@ -233,11 +233,20 @@ def event(showid):
     perf_artist.append(rd)
   c_perf_artist.close()
 
-  cmd = 'SELECT vendor_name FROM sell WHERE show_id = :showid';
+  # cmd = """
+  #       SELECT vendor_name
+  #       FROM sell
+  #       WHERE show_id = :showid""";
+  cmd = """
+        SELECT sell.vendor_name, product
+        FROM sell, vendor
+        WHERE sell.vendor_name = vendor.vendor_name
+        AND show_id = :showid""";
   c_vendor = g.conn.execute(text(cmd), showid=showid)
   vendor = []
   for row in c_vendor.fetchall():
-    vendor.append(row[0])
+    rd = {'name': row[0], 'product': row[1]}
+    vendor.append(rd)
   c_vendor.close()
   print vendor
 

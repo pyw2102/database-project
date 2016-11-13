@@ -74,17 +74,17 @@
             <div class="section-lead">
             	<h4>Venue Information </h4>
             	<div class="section-info">
-            		Venue Name: {{venue}} <br>
-            		Address: {{address}} <br>
+            		<h4 class="text-success">{{venue}}</h4>
+            		<p class="text-success">{{address}}</p>
                     Capacity: 
                     {{capacity}}<br>
                 </div>
             </div>
             <div class="section-lead">
-                <h4>Vendors</h4>
+                <h4>Vendors and Products</h4>
                 <p class="section-info">
                    {% for n in vendor %}
-                     {{ n }}<br>
+                     {{ n.name }}: {{n.product}}<br>
                    {% endfor %}</p>
             </div>     
             <div class="section-lead">
