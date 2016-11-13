@@ -17,82 +17,102 @@
     datetimepicker/a549aa8780dbda16f6cff545aeabc3d71073911e/build/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
     <link href="static/style.css" rel="stylesheet"/>
 </head>
-  <h1> Welcome to the SummerStage Event Page</h1>
-
-  <h3 >Search for an Event</h3>
-
-  <form class="form-inline" action"/" method="post">
-    <div class="form-group">
-      <input type="text" class="form-control" name="a_name" placeholder="Show, Artist, Genre or Venue"> 
-    </div>
-    <!-- Date Range -->
-
-    <div class="form-group">
-        <div class='input-group date' id='datetimepicker1'>
-            <input type='text' name="begin_date_time" placeholder="Begin Date" class="form-control"/>
-            <span class="input-group-addon">
-                <span class="glyphicon glyphicon-calendar"></span>
-            </span>
-        </div>
-    </div>
-    <div class="form-group">
-        <div class='input-group date' id='datetimepicker2'>
-            <input type='text' name="end_date_time" placeholder="End Date" class="form-control" />
-            <span class="input-group-addon">
-                <span class="glyphicon glyphicon-calendar"></span>
-            </span>
-        </div>
-    </div>
-
-    <button type="submit" class="btn btn-default">Search</button>
-
-    <script type="text/javascript">
-      $(function () {
-          $('#datetimepicker1').datetimepicker({
-          });
-          $('#datetimepicker2').datetimepicker({
-              useCurrent: false //Important! See issue #1075
-          });
-          $('#datetimepicker1').data("DateTimePicker").format("MM/DD/YYYY");
-          $('#datetimepicker2').data("DateTimePicker").format("MM/DD/YYYY");
-          $("#datetimepicker1").on("dp.change", function (e) {
-              $('#datetimepicker2').data("DateTimePicker").minDate(e.date);
-          });
-          $("#datetimepicker2").on("dp.change", function (e) {
-              $('#datetimepicker1').data("DateTimePicker").maxDate(e.date);
-          });
-      });
-    </script>
-  </form>
-
 
 <body>
-<!--
-  <h1>Name of Artists in SummerStage Database</h1>
-  <div>{{data}}</div>
-  
-  <div>
-    {% for n in data %}
-    <div>{{n}}</div>
-    {% endfor %}
+<!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container" >
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Homepage</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="#">About</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+  <div class="container">
+    <h1> Welcome to the SummerStage Event Page</h1>
+
+    <h3 >Search for an Event</h3>
+
+    <form action"/" method="post">
+      <div>
+        <div class="form-group col-sm-5 col-md-5 col-lg-5">
+          <input type="text" class="form-control" name="a_name" id="a_name" placeholder="Show, Artist, Genre or Venue" value={{search_value}}> 
+        </div>
+    
+        <!-- Date Range -->
+        <div class="form-inline">
+          <div class="form-group">
+              <div class='input-group date' id='datetimepicker1'>
+                  <input type='text' name="begin_date_time" placeholder="Begin Date" class="form-control" value={{x}}/>
+                  <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                  </span>
+              </div>
+          </div>
+          <div class="form-group">
+              <div class='input-group date' id='datetimepicker2'>
+                  <input type='text' name="end_date_time" placeholder="End Date" class="form-control" value={{y}} />
+                  <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                  </span>
+              </div>
+          </div>
+
+          <button type="submit" class="btn" onClick="saveSearchFields()">Search</button>
+        </div>
+      </div>
+
+      <script type="text/javascript">
+        $(function () {
+            $('#datetimepicker1').datetimepicker({
+            });
+            $('#datetimepicker2').datetimepicker({
+                useCurrent: false //Important! See issue #1075
+            });
+            $('#datetimepicker1').data("DateTimePicker").format("MM/DD/YYYY");
+            $('#datetimepicker2').data("DateTimePicker").format("MM/DD/YYYY");
+            $("#datetimepicker1").on("dp.change", function (e) {
+                $('#datetimepicker2').data("DateTimePicker").minDate(e.date);
+            });
+            $("#datetimepicker2").on("dp.change", function (e) {
+                $('#datetimepicker1').data("DateTimePicker").maxDate(e.date);
+            });
+        });
+      </script>
+    </form>
+
+
+    <h3>Events</h3>
+    <div>
+      {% for n in query_data %}
+      <div class="col-sm-4 col-lg-4 col-md-4">
+        <div class="thumbnail" style="height:150px;padding:1em">
+          <a href="/{{n.showid}}">{{n.showtitle}}</a> 
+          <p class="text-muted">{{ n.showdate  }}  {{n.time}}</p>
+          <p class="text-success">{{n.location}}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
   </div>
-
-<p><a href="/event">Go to Event Page</a></p>
--->
-  <h3>Event query results</h3>
-  <div>
-    {% for n in query_data %}
-    <div><a href="/{{n.showid}}">{{n.showtitle}}</a> {{ n.showdate  }}  </div>
-    {% endfor %}
-  </div>
-
-  <h3>DATE</h3>
-  <div>
-    <p> Begin Date: {{x}}</p>
-    <p> End Date: {{y}} </p>
-  </div>
-
-
 </body>
 
 

@@ -179,7 +179,7 @@ def event(showid):
 
   cmd = 'SELECT show_time FROM show_hosted_at WHERE show_id = :showid';
   c_time = g.conn.execute(text(cmd), showid=showid)
-  time = c_time.first()[0]
+  time = datetime.strptime(str(c_time.first()[0]), "%H:%M:%S").strftime("%I:%M %p")
   c_time.close()
 
   cmd = 'SELECT venue_name FROM show_hosted_at WHERE show_id = :showid';
@@ -275,16 +275,14 @@ def add():
 
 @app.route('/', methods=["post", "get"])
 def display_name():
+  search_value = request.form['a_name']
   name = request.form['a_name'].lower()
   begin_date_time = request.form['begin_date_time']
   end_date_time = request.form['end_date_time']
-  print name
-  print begin_date_time
-  print end_date_time
   n1 = '%' + name + '%'
   
   if begin_date_time == '' and end_date_time == '':
-    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
            FROM (SELECT S.show_id
                  FROM performs_music_of G, artist A, performance P, show_hosted_at S
                  WHERE G.artist_id = A.artist_id
@@ -299,7 +297,7 @@ def display_name():
            WHERE X.show_id = S2.show_id""";
 
   elif begin_date_time != '' and end_date_time == '':
-    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
            FROM (SELECT S.show_id
                  FROM performs_music_of G, artist A, performance P, show_hosted_at S
                  WHERE G.artist_id = A.artist_id
@@ -314,7 +312,7 @@ def display_name():
            WHERE X.show_id = S2.show_id AND S2.show_date >= :d1""";
 
   elif begin_date_time == '' and end_date_time != '':
-    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
            FROM (SELECT S.show_id
                  FROM performs_music_of G, artist A, performance P, show_hosted_at S
                  WHERE G.artist_id = A.artist_id
@@ -329,7 +327,7 @@ def display_name():
            WHERE X.show_id = S2.show_id AND S2.show_date <= :d2""";
 
   else:
-    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date
+    cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
            FROM (SELECT S.show_id
                  FROM performs_music_of G, artist A, performance P, show_hosted_at S
                  WHERE G.artist_id = A.artist_id
@@ -347,10 +345,12 @@ def display_name():
   cursor = g.conn.execute(text(cmd), n2=n1, d1=begin_date_time, d2=end_date_time)
   query_names = []
   for row in cursor:
-    rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2]}
+    rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2], 
+    'location': row[3], 
+    'time':datetime.strptime(str(row[4]), "%H:%M:%S").strftime("%I:%M %p")}
     query_names.append(rd)  # can also be accessed using result[0]
   cursor.close()
-  context = dict(query_data = query_names, x=begin_date_time, y=end_date_time)
+  context = dict(query_data = query_names, x=begin_date_time, y=end_date_time, search_value=search_value)
   return render_template("index.html", **context)
   #return redirect('/')
 
