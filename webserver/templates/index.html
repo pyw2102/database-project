@@ -96,6 +96,17 @@
 
     <h3>Events</h3>
     <div>
+      {% for n in all_events %}
+      <div class="col-sm-4 col-lg-4 col-md-4">
+        <div class="thumbnail" style="height:150px;padding:1em">
+          <a href="/{{n.showid}}">{{n.showtitle}}</a> 
+          <p class="text-muted">{{ n.showdate  }}  {{n.time}}</p>
+          <p class="text-success">{{n.location}}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div>
       {% for n in query_data %}
       <div class="col-sm-4 col-lg-4 col-md-4">
         <div class="thumbnail" style="height:150px;padding:1em">

@@ -109,11 +109,16 @@ def index():
   # example of a database query
   #
   cursor = g.conn.execute("SELECT * FROM show_hosted_at")
-  names = []
-  for result in cursor:
-    names.append(result)  # can also be accessed using result['name']
+  all_events = []
+  for row in cursor:
+    rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2], 
+    'location': row[3], 
+    'time':datetime.strptime(str(row[4]), "%H:%M:%S").strftime("%I:%M %p")}
+    all_events.append(rd)  # can also be accessed using result[0]
   cursor.close()
-
+  #context = dict(all_events = all_events, x=begin_date_time, y=end_date_time, search_value=search_value)
+  #return render_template("index.html", **context)
+  return render_template("index.html", all_events=all_events)
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
   # pass data to a template and dynamically generate HTML based on the data
