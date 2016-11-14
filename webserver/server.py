@@ -108,7 +108,15 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT * FROM show_hosted_at")
+  cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
+           FROM (SELECT S.show_id
+                 FROM performs_music_of G, artist A, performance P, show_hosted_at S
+                 WHERE G.artist_id = A.artist_id
+                       AND A.artist_id = P.artist_id
+                       AND P.show_id = S.show_id ) as X,
+           show_hosted_at as S2
+           WHERE X.show_id = S2.show_id""";
+  cursor = g.conn.execute(text(cmd))
   all_events = []
   for row in cursor:
     rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2], 
