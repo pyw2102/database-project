@@ -8,7 +8,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
@@ -18,27 +17,6 @@
     datetimepicker/a549aa8780dbda16f6cff545aeabc3d71073911e/build/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
     <link href="static/style.css" rel="stylesheet"/>
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="/resources/demos/style.css">
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <link href="static/style.css" rel="stylesheet"/>
-    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
-   
-<script>
-    $( function() {
-      $( "#slider-range" ).slider({
-        range: true,
-        min: 0,
-        max: 100,
-        values: [ 0, 100 ],
-        slide: function( event, ui ) {
-          $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
-        }
-      });
-      $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
-        " - $" + $( "#slider-range" ).slider( "values", 1 ) );
-    } );
-    </script>
 
 </head>
 
@@ -91,13 +69,7 @@
                   </span>
               </div>
           </div>
-          <div class="row">
-            <div class="col-sm-6 col-md-6 col-lg-6">
-                <div class="form-inline" style="padding:1em 0">
-                  <label for="amount">Price range:</label>
-                  <input type="text" name="amount" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-                  <div name="amount" id="slider-range"></div>
-                </div></div>
+
           <button type="submit" class="btn">Search</button>
         </div>
       </div>
@@ -148,7 +120,6 @@
 
   </div>
 
-HELLO
 
 </body>
 
