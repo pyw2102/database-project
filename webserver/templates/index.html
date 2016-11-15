@@ -50,7 +50,7 @@
     <form action"/" method="post">
       <div class="row">
         <div class="form-group col-sm-5 col-md-5 col-lg-5">
-          <input type="text" class="form-control" name="a_name" id="a_name" placeholder="Show, Artist, Genre or Venue" value={{search_value}}> 
+          <input type="text" class="form-control" name="a_name" id="a_name" placeholder="Show, Artist, Genre or Venue" value="{{search_value}}"> 
         </div>
     
         <!-- Date Range -->
@@ -65,8 +65,7 @@
           </div>
           <div class="form-group">
               <div class='input-group date' id='datetimepicker2'>
-                  <input type='text' name="end_date_time" placeholder="End Date" class="form-control" 
-                  value={{y}} />
+                  <input type='text' name="end_date_time" placeholder="End Date" class="form-control" value={{y}} />
                   <span class="input-group-addon">
                       <span class="glyphicon glyphicon-calendar"></span>
                   </span>
@@ -76,15 +75,20 @@
         </div>
       </div>
 
+    <!-- buttons to show more filter options -->
       <div class="form-inline">
-       <input type="button" class="btn btn-secondary" onclick="showVenues()" value="Select Venues"/>
-    
+        <input type="button" class="btn btn-info" onclick="showVenues()" value="Select Venues">
+        <input type="button" class="btn btn-info" onclick="showGenres()" value="Select Genres">
+
 
         <div class="form-group">
-           <input type='text' name="min_price" placeholder="Min Price" class="form-control"/>
-           <input type='text' name="max_price" placeholder="Max Price" class="form-control"/>
+          <label>Max Price: </label>
+          <div class="input-group">
+            <div class="input-group-addon">$</div>
+            <input type='number' name="max_price" placeholder="Max Price" 
+              class="form-control col-sm-1 col-md-1 col-lg-1" />
+          </div>
         </div>
-        
       </div>
 
       <div class="form-inline">
@@ -95,9 +99,12 @@
           <label for="option{{n.venue}}"><b>{{n.venue}}</b></label><br/>
           {% endfor %}
         </div>
-        <div class="form-group col-sm-4 col-md-4 col-lg-4" style="margin:1em 1em;display:none;">
+        <div id="selectGenreDiv" class="form-group col-sm-4 col-md-4 col-lg-4" style="margin:1em 1em;display:none;">
           <h4>Genre</h4>
-          
+          {% for n in all_genres %}
+          <input type="checkbox" class="checkbox" name="genres" id="option{{n.genre}}" value="{{n.genre}}" checked/>
+          <label for="option{{n.genre}}"><b>{{n.genre}}</b></label><br/>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -120,6 +127,14 @@
         });
         function showVenues() {
           var div = document.getElementById('selectVenueDiv');
+          if (div.style.display !== 'none'){
+            div.style.display ='none';
+          }
+          else {
+            div.style.display ='block';
+          }};
+        function showGenres() {
+          var div = document.getElementById('selectGenreDiv');
           if (div.style.display !== 'none'){
             div.style.display ='none';
           }
