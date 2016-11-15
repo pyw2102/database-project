@@ -107,12 +107,20 @@ def index():
 
   #
   # example of a database query
-  #
+
+  venue = """SELECT venue_name From venue""";
+  venue_cursor = g.conn.execute(text(venue))
+  all_venues = []
+  for row in venue_cursor:
+    rd = {'venue': row[0]}
+    all_venues.append(rd)
+  venue_cursor.close()
+
   cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
            FROM (SELECT S.show_id
                  FROM performs_music_of G, artist A, performance P, show_hosted_at S
                  WHERE G.artist_id = A.artist_id
-                       AND A.artist_id = P.artist_id
+                      AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id ) as X,
            show_hosted_at as S2
            WHERE X.show_id = S2.show_id""";
@@ -126,7 +134,7 @@ def index():
   cursor.close()
   #context = dict(all_events = all_events, x=begin_date_time, y=end_date_time, search_value=search_value)
   #return render_template("index.html", **context)
-  return render_template("index.html", all_events=all_events)
+  return render_template("index.html", all_events=all_events, all_venues=all_venues)
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
   # pass data to a template and dynamically generate HTML based on the data
@@ -299,12 +307,24 @@ def add():
 
 @app.route('/', methods=["post", "get"])
 def display_name():
+
   search_value = request.form['a_name']
   name = request.form['a_name'].lower()
   begin_date_time = request.form['begin_date_time']
   end_date_time = request.form['end_date_time']
+  
+
   n1 = '%' + name + '%'
   
+  venue = """SELECT venue_name From venue""";
+  venue_cursor = g.conn.execute(text(venue))
+  all_venues = []
+  for row in venue_cursor:
+    rd = {'venue': row[0]}
+    all_venues.append(rd)
+  venue_cursor.close()
+
+
   if begin_date_time == '' and end_date_time == '':
     cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
            FROM (SELECT S.show_id
@@ -374,7 +394,8 @@ def display_name():
     'time':datetime.strptime(str(row[4]), "%H:%M:%S").strftime("%I:%M %p")}
     query_names.append(rd)  # can also be accessed using result[0]
   cursor.close()
-  context = dict(query_data = query_names, x=begin_date_time, y=end_date_time, search_value=search_value)
+  context = dict(query_data = query_names, x=begin_date_time, y=end_date_time, 
+    search_value=search_value, all_venues=all_venues)
   return render_template("index.html", **context)
   #return redirect('/')
 
