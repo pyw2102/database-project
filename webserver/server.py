@@ -124,19 +124,23 @@ def index():
     all_genres.append(rd)
   genre_cursor.close()
 
-  cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
-           FROM (SELECT S.show_id
-                 FROM performs_music_of G, artist A, performance P, show_hosted_at S
-                 WHERE G.artist_id = A.artist_id
-                      AND A.artist_id = P.artist_id
-                       AND P.show_id = S.show_id ) as X,
-           show_hosted_at as S2
-           WHERE X.show_id = S2.show_id""";
+  # cmd = """SELECT DISTINCT ON(S2.show_id) S2.show_id, S2.show_title, S2.show_date, S2.venue_name, S2.show_time
+  #          FROM (SELECT S.show_id
+  #                FROM performs_music_of G, artist A, performance P, show_hosted_at S
+  #                WHERE G.artist_id = A.artist_id
+  #                     AND A.artist_id = P.artist_id
+  #                      AND P.show_id = S.show_id ) as X,
+  #          show_hosted_at as S2
+  #          WHERE X.show_id = S2.show_id""";
+
+  cmd = """SELECT * FROM show_hosted_at""";
+
   cursor = g.conn.execute(text(cmd))
   all_events = []
   for row in cursor:
-    rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2], 
-    'location': row[3], 
+    #print row
+    rd = {'showid': row[0], 'showtitle': row[2], 'showdate': row[3],
+    'location': row[1],
     'time':datetime.strptime(str(row[4]), "%H:%M:%S").strftime("%I:%M %p")}
     all_events.append(rd)  # can also be accessed using result[0]
   cursor.close()
@@ -377,6 +381,7 @@ def display_name():
       else:
         matched_venues += v[0] + ')'
   matched_venues_cursor.close()
+  print matched_venues
 
   venue = """SELECT venue_name From venue""";
   venue_cursor = g.conn.execute(text(venue))
