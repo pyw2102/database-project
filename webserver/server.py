@@ -321,7 +321,7 @@ def display_name():
   name = request.form['a_name'].lower()
   begin_date_time = request.form['begin_date_time']
   end_date_time = request.form['end_date_time']
-  max_price = request.form['max_price']
+  max_price_choice = request.form['max_price']
   venue_choice = request.form.getlist('venues')
   genre_choice = request.form.getlist('genres')
 
@@ -336,6 +336,7 @@ def display_name():
         venue_set += x + '|'
       else:
         venue_set += x + ')'
+
   if len(genre_choice) == 0:
     genre_set = '()'
   else:
@@ -348,22 +349,34 @@ def display_name():
       else:
         genre_set += x + ')'
 
-  print genre_set
-
-  print len(venue_choice)
-  print len(genre_choice)
-
   n1 = '%' + name + '%'
-  cmd = """SELECT count(*) FROM venue""";
-  venue_count_cursor = g.conn.execute(text(cmd))
-  venue_count = venue_count_cursor.first()[0]
-  venue_count_cursor.close()
+  cmd = """SELECT max(price) FROM seat_option""";
+  max_price_cursor = g.conn.execute(text(cmd))
+  max_price = max_price_cursor.first()[0]
+  max_price_cursor.close()
 
-  cmd = """SELECT count(*) FROM genre""";
-  genre_count_cursor = g.conn.execute(text(cmd))
-  genre_count = genre_count_cursor.first()[0]
-  genre_count_cursor.close()
+  if max_price_choice == '': price = max_price
+  else: price = max_price_choice
 
+  cmd = """SELECT DISTINCT(H.venue_name)
+              FROM have as H, (SELECT * FROM seat_option S WHERE S.price <= :p) as S2
+              Where H.location_name = S2.location_name
+                  AND H.seat_id = S2.seat_id""";
+  matched_venues_cursor = g.conn.execute(text(cmd), p=price)
+
+  matched_venues_list = matched_venues_cursor.fetchall()
+
+  if len(matched_venues_list) == 0: matched_venues = '()'
+  else:
+    matched_venues = '('
+    c = 0
+    for v in matched_venues_list:
+      c += 1
+      if c < len(matched_venues_list):
+        matched_venues += v[0] + '|'
+      else:
+        matched_venues += v[0] + ')'
+  matched_venues_cursor.close()
 
   venue = """SELECT venue_name From venue""";
   venue_cursor = g.conn.execute(text(venue))
@@ -389,6 +402,7 @@ def display_name():
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
                        AND S.venue_name ~ :vs
+                       AND S.venue_name ~ :mv
                        AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
@@ -406,6 +420,7 @@ def display_name():
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
                        AND S.venue_name ~ :vs
+                       AND S.venue_name ~ :mv
                        AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
@@ -423,6 +438,7 @@ def display_name():
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
                        AND S.venue_name ~ :vs
+                       AND S.venue_name ~ :mv
                        AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
@@ -440,6 +456,7 @@ def display_name():
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
                        AND S.venue_name ~ :vs
+                       AND S.venue_name ~ :mv
                        AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
@@ -450,7 +467,7 @@ def display_name():
            WHERE X.show_id = S2.show_id AND (S2.show_date >= :d1 AND S2.show_date <= :d2
 )""";
 
-  cursor = g.conn.execute(text(cmd), n2=n1, d1=begin_date_time, d2=end_date_time, vs=venue_set, gs=genre_set)
+  cursor = g.conn.execute(text(cmd), n2=n1, d1=begin_date_time, d2=end_date_time, vs=venue_set, gs=genre_set, mv=matched_venues)
   query_names = []
   for row in cursor:
     rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2], 
