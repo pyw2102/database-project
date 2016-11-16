@@ -322,12 +322,49 @@ def display_name():
   begin_date_time = request.form['begin_date_time']
   end_date_time = request.form['end_date_time']
   max_price = request.form['max_price']
-  print request.form.getlist('venues')
-  print request.form.getlist('genres')
-  print max_price
+  venue_choice = request.form.getlist('venues')
+  genre_choice = request.form.getlist('genres')
+
+  if len(venue_choice) == 0:
+    venue_set = '()'
+  else:
+    venue_set = '('
+    c = 0
+    for x in venue_choice:
+      c += 1
+      if c < len(venue_choice):
+        venue_set += x + '|'
+      else:
+        venue_set += x + ')'
+  if len(genre_choice) == 0:
+    genre_set = '()'
+  else:
+    genre_set = '('
+    c = 0
+    for x in genre_choice:
+      c += 1
+      if c < len(genre_choice):
+        genre_set += x + '|'
+      else:
+        genre_set += x + ')'
+
+  print genre_set
+
+  print len(venue_choice)
+  print len(genre_choice)
 
   n1 = '%' + name + '%'
-  
+  cmd = """SELECT count(*) FROM venue""";
+  venue_count_cursor = g.conn.execute(text(cmd))
+  venue_count = venue_count_cursor.first()[0]
+  venue_count_cursor.close()
+
+  cmd = """SELECT count(*) FROM genre""";
+  genre_count_cursor = g.conn.execute(text(cmd))
+  genre_count = genre_count_cursor.first()[0]
+  genre_count_cursor.close()
+
+
   venue = """SELECT venue_name From venue""";
   venue_cursor = g.conn.execute(text(venue))
   all_venues = []
@@ -351,6 +388,8 @@ def display_name():
                  WHERE G.artist_id = A.artist_id
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
+                       AND S.venue_name ~ :vs
+                       AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
                             OR lower(P.perf_title) LIKE :n2
@@ -366,6 +405,8 @@ def display_name():
                  WHERE G.artist_id = A.artist_id
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
+                       AND S.venue_name ~ :vs
+                       AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
                             OR lower(P.perf_title) LIKE :n2
@@ -381,6 +422,8 @@ def display_name():
                  WHERE G.artist_id = A.artist_id
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
+                       AND S.venue_name ~ :vs
+                       AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
                             OR lower(P.perf_title) LIKE :n2
@@ -396,6 +439,8 @@ def display_name():
                  WHERE G.artist_id = A.artist_id
                        AND A.artist_id = P.artist_id
                        AND P.show_id = S.show_id
+                       AND S.venue_name ~ :vs
+                       AND G.genre_type ~ :gs
                        AND (lower(A.artist_name) LIKE :n2
                             OR lower(S.show_title) LIKE :n2
                             OR lower(P.perf_title) LIKE :n2
@@ -405,7 +450,7 @@ def display_name():
            WHERE X.show_id = S2.show_id AND (S2.show_date >= :d1 AND S2.show_date <= :d2
 )""";
 
-  cursor = g.conn.execute(text(cmd), n2=n1, d1=begin_date_time, d2=end_date_time)
+  cursor = g.conn.execute(text(cmd), n2=n1, d1=begin_date_time, d2=end_date_time, vs=venue_set, gs=genre_set)
   query_names = []
   for row in cursor:
     rd = {'showid': row[0], 'showtitle': row[1], 'showdate': row[2], 
@@ -433,7 +478,7 @@ if __name__ == "__main__":
   @click.option('--debug', is_flag=True)
   @click.option('--threaded', is_flag=True)
   @click.argument('HOST', default='0.0.0.0')
-  @click.argument('PORT', default=8111, type=int)
+  @click.argument('PORT', default=8080, type=int)
   def run(debug, threaded, host, port):
     """
     This function handles command line parameters.
@@ -449,6 +494,7 @@ if __name__ == "__main__":
 
     HOST, PORT = host, port
     print "running on %s:%d" % (HOST, PORT)
+    print "locally on http://localhost:%d" % PORT
     app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
 
 

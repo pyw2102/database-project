@@ -145,7 +145,13 @@
     </form>
 
       <div class="container">
+    {% if all_events %}
     <h3>Events</h3>
+    {% elif query_data != [] %}
+    <h3>Query results</h3>
+    {% else %}
+    <h3>No results found</h3>
+    {% endif %}
     <div>
       {% for n in all_events %}
       <div class="col-sm-4 col-lg-4 col-md-4">
