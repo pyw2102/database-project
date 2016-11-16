@@ -94,16 +94,20 @@
       <div class="form-inline">
         <div id="selectVenueDiv" class="form-group col-sm-4 col-md-4 col-lg-4" style="margin:1em 1em;display:none;">
           <h4>Venues</h4>
+          <input type="checkbox" name="selectVenues" id="selectAllVenues" checked/>
+          <label for="SelectVenues">Select All Venues</label><br/>
           {% for n in all_venues %}
-          <input type="checkbox" class="checkbox" name="venues" id="option{{n.venue}}" value="{{n.venue}}" checked/>
-          <label for="option{{n.venue}}"><b>{{n.venue}}</b></label><br/>
+          <input type="checkbox" class="checkboxVenues" name="venues" id="option{{n.venue}}" value="{{n.venue}}" checked/>
+          <label for="option{{n.venue}}" style="font-weight: normal;">{{n.venue}}</label><br/>
           {% endfor %}
         </div>
         <div id="selectGenreDiv" class="form-group col-sm-4 col-md-4 col-lg-4" style="margin:1em 1em;display:none;">
           <h4>Genre</h4>
+          <input type="checkbox" name="selectGenres" id="selectAllGenres" checked/>
+          <label for="SelectGenres">Select All Genres</label><br/>
           {% for n in all_genres %}
-          <input type="checkbox" class="checkbox" name="genres" id="option{{n.genre}}" value="{{n.genre}}" checked/>
-          <label for="option{{n.genre}}"><b>{{n.genre}}</b></label><br/>
+          <input type="checkbox" class="checkboxGenres" name="genres" id="option{{n.genre}}" value="{{n.genre}}" checked/>
+          <label for="option{{n.genre}}" style="font-weight: normal;">{{n.genre}}</label><br/>
           {% endfor %}
         </div>
       </div>
@@ -124,6 +128,36 @@
             $("#datetimepicker2").on("dp.change", function (e) {
                 $('#datetimepicker1').data("DateTimePicker").maxDate(e.date);
             });
+            //select all checkboxes
+            $("#selectAllGenres").change(function(){  //"select all" change 
+                $(".checkboxGenres").prop('checked', $(this).prop("checked")); //change all ".checkbox" checked status
+            });
+            $("#selectAllVenues").change(function(){  //"select all" change 
+                $(".checkboxVenues").prop('checked', $(this).prop("checked")); //change all ".checkbox" checked status
+            });
+
+            //".checkbox" change 
+            $('.checkboxGenres').change(function(){ 
+                //uncheck "select all", if one of the listed checkbox item is unchecked
+                if(false == $(this).prop("checked")){ //if this item is unchecked
+                    $("#selectAllGenres").prop('checked', false); //change "select all" checked status to false
+                }
+                //check "select all" if all checkbox items are checked
+                if ($('.checkboxGenres:checked').length == $('.checkboxGenres').length ){
+                    $("#selectAllGenres").prop('checked', true);
+                }
+            });
+            //".checkbox" change 
+            $('.checkboxVenues').change(function(){ 
+                //uncheck "select all", if one of the listed checkbox item is unchecked
+                if(false == $(this).prop("checked")){ //if this item is unchecked
+                    $("#selectAllVenues").prop('checked', false); //change "select all" checked status to false
+                }
+                //check "select all" if all checkbox items are checked
+                if ($('.checkboxVenues:checked').length == $('.checkboxVenues').length ){
+                    $("#selectAllVenues").prop('checked', true);
+                }
+            });
         });
         function showVenues() {
           var div = document.getElementById('selectVenueDiv');
@@ -141,6 +175,7 @@
           else {
             div.style.display ='block';
           }};
+
       </script>
     </form>
 
